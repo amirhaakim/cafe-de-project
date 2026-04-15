@@ -1,0 +1,1 @@
+Select * FROM {{source('cafe', 'cafe_sales')}}

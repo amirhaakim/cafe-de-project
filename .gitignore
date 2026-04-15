@@ -1,0 +1,7 @@
+.env
+.DS_Store
+logs/
+venv/
+target/
+dbt_packages/
+dirty_cafe_sales.csv
