@@ -1,0 +1,8 @@
+version : 2
+
+models:
+  - name: bronze_cafe_sales
+    columns:
+      - name: '"transaction id"'
+        tests: 
+          - not_null
