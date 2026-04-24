@@ -6,3 +6,14 @@ sources:
     schema: public
     tables:
       - name: cafe_sales
+        columns:
+          - name: '"transaction id"'
+            tests:
+              - not_null
+              - unique
+          - name: '"transaction date"'
+            tests:
+              - not_null
+          - name: '"price per unit"'
+            tests:
+              - not_null
