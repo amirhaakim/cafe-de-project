@@ -1,0 +1,18 @@
+version : 2
+
+models:
+  - name: silver_cleaned_1
+    columns:
+      - name: transaction_id
+        tests: 
+          - unique
+          - not_null
+
+models:
+  - name: silver_cleaned_2
+    columns:
+      - name: transaction_id
+        tests: 
+          - unique
+          - not_null
+
