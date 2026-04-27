@@ -24,7 +24,7 @@ sources:
     tables:
       - name: silver_corrections
         columns:
-        - name: "transaction_id
-          tests:
-            - not_null
-            - unique
+          - name: transaction_id
+            tests:
+              - not_null
+              - unique

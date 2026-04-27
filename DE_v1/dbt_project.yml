@@ -44,3 +44,6 @@ models:
     facts:
       +materialized: table
       +schema: facts
+    silver_curated:
+      +materialized: table
+      +schema: silver_curated
