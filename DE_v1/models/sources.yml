@@ -17,3 +17,14 @@ sources:
           - name: '"price per unit"'
             tests:
               - not_null
+
+  - name: ops
+    database: cafe_db
+    schema: ops
+    tables:
+      - name: silver_corrections
+        columns:
+        - name: "transaction_id
+          tests:
+            - not_null
+            - unique
