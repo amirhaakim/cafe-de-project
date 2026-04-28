@@ -1,15 +1,277 @@
-Welcome to your new dbt project!
+# Cafe Data Engineering dbt Project
 
-### Using the starter project
+This is a learning and pilot dbt project for building a warehouse-style data pipeline from raw cafe sales data into curated, analytics-ready models.
 
-Try running the following commands:
-- dbt run
-- dbt test
+The project mirrors a common production pattern where data is extracted from an operational source system, loaded into a warehouse, cleaned, curated, and modeled into facts and dimensions for BI consumption.
 
+## Project Purpose
 
-### Resources:
-- Learn more about dbt [in the docs](https://docs.getdbt.com/docs/introduction)
-- Check out [Discourse](https://discourse.getdbt.com/) for commonly asked questions and answers
-- Join the [chat](https://community.getdbt.com/) on Slack for live discussions and support
-- Find [dbt events](https://events.getdbt.com) near you
-- Check out [the blog](https://blog.getdbt.com/) for the latest news on dbt's development and best practices
+The goal of this project is to demonstrate:
+
+- Python-based CSV ingestion into Postgres
+- medallion-style transformation layers: bronze, silver, curated silver, dimensions, and facts
+- dbt model organization and materialization strategy
+- data quality handling using tests
+- a controlled manual correction workflow for bad or missing source values
+- dimensional modeling with fact and dimension tables
+
+## Data Flow
+
+```text
+dirty_cafe_sales.csv
+  -> data_ingestion.py
+  -> public.cafe_sales
+  -> bronze
+  -> silver
+  -> silver_curated
+  -> dimensions / facts
+```
+
+## Data Ingestion
+
+File: `../data_ingestion.py`
+
+The ingestion script loads the local CSV file into Postgres before dbt transformations run.
+
+Input:
+
+- `../dirty_cafe_sales.csv`
+
+Output table:
+
+- `public.cafe_sales`
+
+What the script does:
+
+- reads `dirty_cafe_sales.csv` with pandas
+- converts CSV column names to lowercase
+- connects to Postgres using `engine_credentials` from `.env`
+- replaces `public.cafe_sales` with the loaded CSV data
+
+Run from the repository root:
+
+```bash
+cd /Users/amirhakim/Cafe_DE
+python data_ingestion.py
+```
+
+Expected output:
+
+```text
+Loaded <row_count> rows into cafe_db.public.cafe_sales
+```
+
+## Main Layers
+
+### Sources
+
+Sources are declared in `models/sources.yml`.
+
+Current sources:
+
+- `cafe.cafe_sales`: raw cafe sales source table
+- `ops.silver_corrections`: manual correction table maintained outside dbt
+
+### Bronze
+
+Folder: `models/bronze`
+
+The bronze layer represents the raw source data exposed to dbt with minimal transformation.
+
+Main model:
+
+- `bronze_cafe_sales`
+
+### Silver
+
+Folder: `models/silver`
+
+The silver layer standardizes column names, casts data types, and converts invalid source values such as `ERROR` and `UNKNOWN` into cleaner values.
+
+Main models:
+
+- `silver_cleaned_1`
+- `silver_cleaned_2`
+
+### Curated Silver
+
+Folder: `models/silver_curated`
+
+The curated silver layer applies approved human corrections from `ops.silver_corrections` on top of `silver_cleaned_2`.
+
+Main model:
+
+- `silver_curated`
+
+This model keeps the dbt-generated silver layer separate from manual intervention. Humans do not edit dbt output tables directly. Instead, they insert corrections into `ops.silver_corrections`, and dbt applies those corrections during the curated model run.
+
+### Dimensions
+
+Folder: `models/dimensions`
+
+Dimension tables provide descriptive context for facts.
+
+Current dimensions:
+
+- `dim_date`
+- `dim_item`
+- `dim_location`
+- `dim_payment_method`
+
+Each dimension includes a surrogate key and an unknown member using key `-1`.
+
+### Facts
+
+Folder: `models/facts`
+
+The fact table contains the measurable sales transactions and foreign keys to the dimension tables.
+
+Current fact model:
+
+- `fct_table`
+
+The grain of the fact table is one row per transaction.
+
+## Manual Correction Workflow
+
+The manual correction table is created directly in Postgres:
+
+```sql
+create schema if not exists ops;
+
+create table if not exists ops.silver_corrections (
+  transaction_id text primary key,
+  item text,
+  quantity integer,
+  price_per_unit numeric,
+  total_spent numeric,
+  payment_method text,
+  location text,
+  transaction_date date,
+  corrected_by text not null,
+  corrected_at timestamp not null default now(),
+  reason text
+);
+```
+
+Workflow:
+
+1. dbt builds `silver_cleaned_2` from the source data.
+2. Humans add approved fixes into `ops.silver_corrections`.
+3. dbt builds `silver_curated` by merging the base silver data with correction values.
+4. Dimensions and facts are built from `silver_curated`.
+
+## Data Model
+
+The dimensional model contains:
+
+- `dimensions.dim_date`
+- `dimensions.dim_item`
+- `dimensions.dim_location`
+- `dimensions.dim_payment_method`
+- `facts.fct_table`
+
+The fact table stores dimension keys:
+
+- `date_key`
+- `item_key`
+- `location_key`
+- `payment_method_key`
+
+Relationships are validated using dbt `relationships` tests. Physical foreign key constraints are not currently enforced in Postgres.
+
+## Schema Naming
+
+This project overrides dbt's default schema naming behavior using:
+
+- `macros/generate_schema_name.sql`
+
+This allows model folders to build into exact schema names such as:
+
+- `bronze`
+- `silver`
+- `silver_curated`
+- `dimensions`
+- `facts`
+
+## Running the Project
+
+First, load the source data into Postgres:
+
+```bash
+cd /Users/amirhakim/Cafe_DE
+python data_ingestion.py
+```
+
+Run commands from the dbt project directory:
+
+```bash
+cd /Users/amirhakim/Cafe_DE/DE_v1
+```
+
+Build all models:
+
+```bash
+dbt run
+```
+
+Run tests:
+
+```bash
+dbt test
+```
+
+Run both models and tests:
+
+```bash
+dbt build
+```
+
+Build only the dimensional model:
+
+```bash
+dbt build --select "dim_date dim_item dim_location dim_payment_method fct_table"
+```
+
+## Validation in DBeaver
+
+Expected schemas and tables:
+
+- `silver_curated.silver_curated`
+- `dimensions.dim_date`
+- `dimensions.dim_item`
+- `dimensions.dim_location`
+- `dimensions.dim_payment_method`
+- `facts.fct_table`
+
+Example validation query:
+
+```sql
+select
+    f.transaction_id,
+    d.full_date,
+    i.item_name,
+    l.location_name,
+    p.payment_method_name,
+    f.quantity,
+    f.price_per_unit,
+    f.total_spent,
+    f.is_total_reconciled,
+    f.total_spent_source
+from facts.fct_table f
+left join dimensions.dim_date d
+    on f.date_key = d.date_key
+left join dimensions.dim_item i
+    on f.item_key = i.item_key
+left join dimensions.dim_location l
+    on f.location_key = l.location_key
+left join dimensions.dim_payment_method p
+    on f.payment_method_key = p.payment_method_key
+limit 100;
+```
+
+## Notes
+
+- The current active dbt target is `dev`, which points to local Postgres.
+- `dirty_cafe_sales.csv` is ignored by git and is not committed to the repository.
+- DBeaver ERD lines require physical FK constraints in Postgres. This project currently uses dbt relationship tests instead of physical FK constraints.
