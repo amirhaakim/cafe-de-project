@@ -39,3 +39,4 @@ models:
       - name: price_per_unit
       - name: total_spent
       - name: is_total_reconciled
+      - name: total_spent_source

@@ -33,9 +33,14 @@ final as (
         coalesce(c.total_spent, b.total_spent, coalesce(c.quantity, b.quantity) * coalesce(c.price_per_unit, b.price_per_unit)
         ) as total_spent,
         case
-            when coalesce(c.total_spent, b.total_spent) is not null then true
-            else false
+            when coalesce(c.total_spent, b.total_spent) is not null then 'Yes'
+            else 'No'
         end as is_total_reconciled,
+        case
+            when c.total_spent is not null then 'corrected_total'
+            when b.total_spent is not null then 'original_total'
+            else 'fallback_calculated'
+        end as total_spent_source,
         coalesce(c.payment_method, b.payment_method) as payment_method,
         coalesce(c.location, b.location) as location,
         coalesce(c.transaction_date, b.transaction_date) as transaction_date

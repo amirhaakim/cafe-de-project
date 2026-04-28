@@ -10,7 +10,8 @@ with base as (
         quantity,
         price_per_unit,
         total_spent,
-        is_total_reconciled
+        is_total_reconciled,
+        total_spent_source
     from {{ ref('silver_curated') }}
 )
 
@@ -23,7 +24,8 @@ select
     b.quantity,
     b.price_per_unit,
     b.total_spent,
-    b.is_total_reconciled
+    b.is_total_reconciled,
+    b.total_spent_source
 from base b
 left join {{ ref('dim_date') }} dd
     on b.transaction_date = dd.full_date
