@@ -7,3 +7,21 @@ models:
         tests: 
           - unique
           - not_null
+  - name: dim_item
+    columns:
+      - name: item_key
+        tests:
+          - unique
+          - not_null
+  - name: dim_location
+    columns:
+    - name: location_key
+      tests:
+        - unique
+        - not_null
+  - name: dim_payment_method
+    columns:
+      - name: payment_method_key
+        tests:
+          - unique
+          - not_null
