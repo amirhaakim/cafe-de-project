@@ -40,3 +40,4 @@ models:
       - name: total_spent
       - name: is_total_reconciled
       - name: total_spent_source
+  
