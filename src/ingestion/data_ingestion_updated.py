@@ -7,14 +7,14 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
 
 
-PROJECT_ROOT = Path(__file__).resolve().parent
-CSV_PATH = PROJECT_ROOT / "dirty_cafe_sales.csv"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+CSV_PATH = REPO_ROOT / "dirty_cafe_sales.csv"
 TARGET_SCHEMA = "public"
 TARGET_TABLE = "cafe_sales"
 
 
 def get_engine():
-    load_dotenv(PROJECT_ROOT / ".env")
+    load_dotenv(REPO_ROOT / ".env")
 
     engine_credentials = os.getenv("engine_credentials")
     if not engine_credentials:
