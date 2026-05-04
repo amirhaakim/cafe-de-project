@@ -14,6 +14,7 @@ The goal of this project is to demonstrate:
 - data quality handling using tests
 - a controlled manual correction workflow for bad or missing source values
 - dimensional modeling with fact and dimension tables
+- analytics-oriented marts for reporting use cases
 
 ## Data Flow
 
@@ -25,6 +26,7 @@ dirty_cafe_sales.csv
   -> silver
   -> silver_curated
   -> dimensions / facts
+  -> marts
 ```
 
 ## Data Ingestion
@@ -132,6 +134,26 @@ Current fact model:
 
 The grain of the fact table is one row per transaction.
 
+### Marts
+
+Folder: `models/marts`
+
+Marts provide report-ready aggregates built on top of `facts.fct_table` and dimensions.
+
+Current marts:
+
+- `marts_daily_sales`
+- `marts_daily_sales_item`
+- `marts_daily_sales_location`
+- `marts_daily_sales_payment`
+
+Current marts are focused on sales analysis by:
+
+- day
+- item
+- location
+- payment method
+
 ## Manual Correction Workflow
 
 The manual correction table is created directly in Postgres:
@@ -170,6 +192,10 @@ The dimensional model contains:
 - `dimensions.dim_location`
 - `dimensions.dim_payment_method`
 - `facts.fct_table`
+- `marts.marts_daily_sales`
+- `marts.marts_daily_sales_item`
+- `marts.marts_daily_sales_location`
+- `marts.marts_daily_sales_payment`
 
 The fact table stores dimension keys:
 
@@ -193,6 +219,21 @@ This allows model folders to build into exact schema names such as:
 - `silver_curated`
 - `dimensions`
 - `facts`
+- `marts`
+
+## Tests and Packages
+
+This project uses:
+
+- built-in dbt generic tests (`unique`, `not_null`, `relationships`)
+- `dbt_utils` package for extended testing/macros (installed via `packages.yml`)
+
+Silver model tests are defined for both:
+
+- `silver_cleaned_1.transaction_id` (`unique`, `not_null`)
+- `silver_cleaned_2.transaction_id` (`unique`, `not_null`)
+
+Unknown-member flags in dimensions/marts are stored as `Yes`/`No` text (not booleans).
 
 ## Running the Project
 
@@ -215,6 +256,12 @@ Build all models:
 dbt run
 ```
 
+Build only one specific model/table:
+
+```bash
+dbt run --select fct_table
+```
+
 Run tests:
 
 ```bash
@@ -233,41 +280,16 @@ Build only the dimensional model:
 dbt build --select "dim_date dim_item dim_location dim_payment_method fct_table"
 ```
 
-## Validation in DBeaver
+Build only marts:
 
-Expected schemas and tables:
+```bash
+dbt build --select marts
+```
 
-- `silver_curated.silver_curated`
-- `dimensions.dim_date`
-- `dimensions.dim_item`
-- `dimensions.dim_location`
-- `dimensions.dim_payment_method`
-- `facts.fct_table`
+Run tests only for silver models:
 
-Example validation query:
-
-```sql
-select
-    f.transaction_id,
-    d.full_date,
-    i.item_name,
-    l.location_name,
-    p.payment_method_name,
-    f.quantity,
-    f.price_per_unit,
-    f.total_spent,
-    f.is_total_reconciled,
-    f.total_spent_source
-from facts.fct_table f
-left join dimensions.dim_date d
-    on f.date_key = d.date_key
-left join dimensions.dim_item i
-    on f.item_key = i.item_key
-left join dimensions.dim_location l
-    on f.location_key = l.location_key
-left join dimensions.dim_payment_method p
-    on f.payment_method_key = p.payment_method_key
-limit 100;
+```bash
+dbt test --select "silver_cleaned_1 silver_cleaned_2"
 ```
 
 ## Notes
