@@ -29,29 +29,6 @@ dirty_cafe_sales.csv
   -> marts
 ```
 
-## Lineage Graph (dbt Docs)
-
-Generate project documentation and lineage metadata:
-
-```bash
-dbt docs generate
-```
-
-Serve the docs locally:
-
-```bash
-dbt docs serve
-```
-
-Then open the local docs URL and use the lineage graph to inspect upstream/downstream dependencies across `bronze`, `silver`, `silver_curated`, `dimensions`, `facts`, and `marts`.
-
-Why this helps:
-
-- makes model dependencies explicit and reviewable
-- speeds up impact analysis before changing a model
-- helps validate that transformation layers are organized as intended
-- improves project handover and stakeholder communication
-
 ## Data Ingestion
 
 File: `../data_ingestion.py`
@@ -339,6 +316,29 @@ Run tests only for silver models:
 ```bash
 dbt test --select "silver_cleaned_1 silver_cleaned_2"
 ```
+
+## Lineage Graph (dbt Docs)
+
+Generate project documentation and lineage metadata:
+
+```bash
+dbt docs generate
+```
+
+Serve the docs locally:
+
+```bash
+dbt docs serve
+```
+
+Then open the local docs URL and use the lineage graph to inspect upstream/downstream dependencies across `bronze`, `silver`, `silver_curated`, `dimensions`, `facts`, and `marts`.
+
+Why this helps:
+
+- makes model dependencies explicit and reviewable
+- speeds up impact analysis before changing a model
+- helps validate that transformation layers are organized as intended
+- improves project handover and stakeholder communication
 
 ## Notes
 
