@@ -16,7 +16,7 @@ date_rows as (
         extract(quarter from full_date)::int as quarter_number,
         extract(year from full_date)::int as year_number,
         trim(to_char(full_date, 'Day')) as day_name,
-        false as is_unknown
+        'No'::text as is_unknown
     from base_dates
 )
 select
@@ -28,7 +28,7 @@ select
     null::int as quarter_number,
     null::int as year_number,
     'Unknown'::text as day_name,
-    true as is_unknown
+    'Yes'::text as is_unknown
 
 union all
 

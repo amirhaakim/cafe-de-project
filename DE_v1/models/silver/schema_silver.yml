@@ -1,18 +1,18 @@
-version : 2
+version: 2
 
 models:
   - name: silver_cleaned_1
+    description: "First silver layer (rename/standardize from bronze)."
     columns:
       - name: transaction_id
-        tests: 
+        tests:
           - unique
           - not_null
 
-models:
   - name: silver_cleaned_2
+    description: "Second silver layer (type cleaning and ERROR/UNKNOWN handling)."
     columns:
       - name: transaction_id
-        tests: 
+        tests:
           - unique
           - not_null
-

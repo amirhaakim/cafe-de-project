@@ -12,14 +12,14 @@ numbered_payment_methods as (
     select
         row_number() over (order by payment_method_name) as payment_method_key,
         payment_method_name,
-        false as is_unknown
+        'No'::text as is_unknown
     from distinct_payment_methods
 )
 
 select
     -1 as payment_method_key,
     'Unknown Payment Method'::text as payment_method_name,
-    true as is_unknown
+    'Yes'::text as is_unknown
 
 union all
 

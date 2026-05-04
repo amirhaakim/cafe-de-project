@@ -12,14 +12,14 @@
       select
           row_number() over (order by location_name) as location_key,
           location_name,
-          false as is_unknown
+          'No'::text as is_unknown
       from distinct_locations
   )
 
   select
       -1 as location_key,
       'Unknown Location'::text as location_name,
-      true as is_unknown
+      'Yes'::text as is_unknown
 
   union all
 
