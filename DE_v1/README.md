@@ -1,12 +1,12 @@
 # Cafe Data Engineering dbt Project
 
-This is a learning and pilot dbt project for building a warehouse-style data pipeline from raw cafe sales data into curated, analytics-ready models.
+This dbt project implements a production-style warehouse pipeline for cafe sales data, from raw ingestion through curated transformation and analytics-ready serving layers.
 
-The project mirrors a common production pattern where data is extracted from an operational source system, loaded into a warehouse, cleaned, curated, and modeled into facts and dimensions for BI consumption.
+It follows a practical analytics engineering architecture: source ingestion into Postgres, medallion-style refinement, controlled correction workflows, dimensional modeling, and report-ready marts for BI consumption.
 
 ## Project Purpose
 
-The goal of this project is to demonstrate:
+This project is designed to demonstrate:
 
 - Python-based CSV ingestion into Postgres
 - medallion-style transformation layers: bronze, silver, curated silver, dimensions, and facts
@@ -205,6 +205,31 @@ The fact table stores dimension keys:
 - `payment_method_key`
 
 Relationships are validated using dbt `relationships` tests. Physical foreign key constraints are not currently enforced in Postgres.
+
+## Dimensional Model Details
+
+Fact table:
+
+- `facts.fct_table`
+- grain: one row per transaction (`transaction_id`)
+- measures: `quantity`, `price_per_unit`, `total_spent`
+- data quality/context fields: `is_total_reconciled`, `total_spent_source`
+- foreign keys: `date_key`, `item_key`, `location_key`, `payment_method_key`
+
+Dimension tables:
+
+- `dimensions.dim_date`
+  - one row per calendar date + one unknown member (`date_key = -1`)
+  - supports time-based slicing (day, month, quarter, year, weekday)
+- `dimensions.dim_item`
+  - one row per distinct item + one unknown member (`item_key = -1`)
+  - supports product/item-level analysis
+- `dimensions.dim_location`
+  - one row per distinct location + one unknown member (`location_key = -1`)
+  - supports branch/location-level analysis
+- `dimensions.dim_payment_method`
+  - one row per distinct payment method + one unknown member (`payment_method_key = -1`)
+  - supports payment-mix analysis
 
 ## Schema Naming
 
