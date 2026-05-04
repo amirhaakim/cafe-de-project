@@ -134,6 +134,8 @@ Current fact model:
 
 The grain of the fact table is one row per transaction.
 
+![facts.fct_table preview](../fact_table.png)
+
 ### Marts
 
 Folder: `models/marts`
@@ -208,28 +210,42 @@ Relationships are validated using dbt `relationships` tests. Physical foreign ke
 
 ## Dimensional Model Details
 
-Fact table:
+### `facts.fct_table`
 
-- `facts.fct_table`
 - grain: one row per transaction (`transaction_id`)
 - measures: `quantity`, `price_per_unit`, `total_spent`
 - data quality/context fields: `is_total_reconciled`, `total_spent_source`
 - foreign keys: `date_key`, `item_key`, `location_key`, `payment_method_key`
 
-Dimension tables:
+![facts.fct_table preview](../fact_table.png)
 
-- `dimensions.dim_date`
-  - one row per calendar date + one unknown member (`date_key = -1`)
-  - supports time-based slicing (day, month, quarter, year, weekday)
-- `dimensions.dim_item`
-  - one row per distinct item + one unknown member (`item_key = -1`)
-  - supports product/item-level analysis
-- `dimensions.dim_location`
-  - one row per distinct location + one unknown member (`location_key = -1`)
-  - supports branch/location-level analysis
-- `dimensions.dim_payment_method`
-  - one row per distinct payment method + one unknown member (`payment_method_key = -1`)
-  - supports payment-mix analysis
+### `dimensions.dim_date`
+
+- one row per calendar date + one unknown member (`date_key = -1`)
+- supports time-based slicing (day, month, quarter, year, weekday)
+
+![dimensions.dim_date preview](../dim_date.png)
+
+### `dimensions.dim_item`
+
+- one row per distinct item + one unknown member (`item_key = -1`)
+- supports product/item-level analysis
+
+![dimensions.dim_item preview](../dim_item.png)
+
+### `dimensions.dim_location`
+
+- one row per distinct location + one unknown member (`location_key = -1`)
+- supports branch/location-level analysis
+
+![dimensions.dim_location preview](../dim_location.png)
+
+### `dimensions.dim_payment_method`
+
+- one row per distinct payment method + one unknown member (`payment_method_key = -1`)
+- supports payment-mix analysis
+
+![dimensions.dim_payment_method preview](../dim_payment_method.png)
 
 ## Schema Naming
 
@@ -332,6 +348,8 @@ dbt docs serve
 ```
 
 Then open the local docs URL and use the lineage graph to inspect upstream/downstream dependencies across `bronze`, `silver`, `silver_curated`, `dimensions`, `facts`, and `marts`.
+
+![dbt lineage graph](../DAG_dbt.png)
 
 Why this helps:
 

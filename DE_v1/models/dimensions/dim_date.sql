@@ -3,7 +3,7 @@
 with base_dates as (
     select distinct
         transaction_date::date as full_date
-    from {{ ref('silver_cleaned_2') }}
+    from {{ ref('silver_curated') }}
     where transaction_date is not null
 ),
 date_rows as (
