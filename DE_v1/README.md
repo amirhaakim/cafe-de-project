@@ -31,13 +31,13 @@ dirty_cafe_sales.csv
 
 ## Data Ingestion
 
-File: `../data_ingestion.py`
+File: `src/ingestion/data_ingestion_updated.py`
 
 The ingestion script loads the local CSV file into Postgres before dbt transformations run.
 
 Input:
 
-- `../dirty_cafe_sales.csv`
+- `dirty_cafe_sales.csv`
 
 Output table:
 
@@ -48,13 +48,13 @@ What the script does:
 - reads `dirty_cafe_sales.csv` with pandas
 - converts CSV column names to lowercase
 - connects to Postgres using `engine_credentials` from `.env`
-- replaces `public.cafe_sales` with the loaded CSV data
+- upserts rows into `public.cafe_sales` using `transaction_id` as the primary key
 
 Run from the repository root:
 
 ```bash
 cd /Users/amirhakim/Cafe_DE
-python data_ingestion.py
+python src/ingestion/data_ingestion_updated.py
 ```
 
 Expected output:
@@ -90,9 +90,8 @@ Folder: `models/silver`
 
 The silver layer standardizes column names, casts data types, and converts invalid source values such as `ERROR` and `UNKNOWN` into cleaner values.
 
-Main models:
+Main model:
 
-- `silver_cleaned_1`
 - `silver_cleaned_2`
 
 ### Curated Silver
@@ -269,9 +268,8 @@ This project uses:
 - built-in dbt generic tests (`unique`, `not_null`, `relationships`)
 - `dbt_utils` package for extended testing/macros (installed via `packages.yml`)
 
-Silver model tests are defined for both:
+Silver model tests are defined for:
 
-- `silver_cleaned_1.transaction_id` (`unique`, `not_null`)
 - `silver_cleaned_2.transaction_id` (`unique`, `not_null`)
 
 Unknown-member flags in dimensions/marts are stored as `Yes`/`No` text (not booleans).
@@ -330,7 +328,7 @@ dbt build --select marts
 Run tests only for silver models:
 
 ```bash
-dbt test --select "silver_cleaned_1 silver_cleaned_2"
+dbt test --select silver_cleaned_2
 ```
 
 ## Lineage Graph (dbt Docs)
@@ -357,6 +355,13 @@ Why this helps:
 - speeds up impact analysis before changing a model
 - helps validate that transformation layers are organized as intended
 - improves project handover and stakeholder communication
+
+## Roadmap
+
+The following improvements are planned for future versions of this project:
+
+- **Pipeline deployment**: containerize the ingestion script and Postgres instance using Docker, and migrate to a managed cloud database (e.g. AWS RDS or Supabase) for a production-grade setup
+- **Orchestration**: introduce a workflow orchestrator (Apache Airflow or Prefect) to schedule and monitor the full pipeline — ingestion followed by `dbt build` — on a recurring cadence with alerting on failure
 
 ## Notes
 

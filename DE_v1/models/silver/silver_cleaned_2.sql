@@ -8,4 +8,4 @@ SELECT
     CASE WHEN payment_method IN ('ERROR', 'UNKNOWN') THEN NULL ELSE payment_method END::text as payment_method,
     CASE WHEN "location" IN ('ERROR', 'UNKNOWN') THEN NULL ELSE "location" END::text as "location",
     CASE WHEN transaction_date IN ('ERROR', 'UNKNOWN') THEN NULL ELSE transaction_date END::DATE as transaction_date
-FROM {{ref('silver_cleaned_1')}}
+FROM {{ref('bronze_cafe_sales')}}
