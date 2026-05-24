@@ -31,7 +31,7 @@ dirty_cafe_sales.csv
 
 ## Data Ingestion
 
-File: `src/ingestion/data_ingestion_updated.py`
+File: `ingestion/data_ingestion_updated.py`
 
 The ingestion script loads the local CSV file into Postgres before dbt transformations run.
 
@@ -54,7 +54,7 @@ Run from the repository root:
 
 ```bash
 cd /Users/amirhakim/Cafe_DE
-python src/ingestion/data_ingestion_updated.py
+python ingestion/data_ingestion_updated.py
 ```
 
 Expected output:
@@ -280,13 +280,13 @@ First, load the source data into Postgres:
 
 ```bash
 cd /Users/amirhakim/Cafe_DE
-python data_ingestion.py
+python ingestion/data_ingestion_updated.py
 ```
 
 Run commands from the dbt project directory:
 
 ```bash
-cd /Users/amirhakim/Cafe_DE/DE_v1
+cd /Users/amirhakim/Cafe_DE/transform
 ```
 
 Build all models:
