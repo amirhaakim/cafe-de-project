@@ -356,12 +356,40 @@ Why this helps:
 - helps validate that transformation layers are organized as intended
 - improves project handover and stakeholder communication
 
+## CI/CD
+
+This project uses GitHub Actions to automatically validate the dbt pipeline on every push and pull request.
+
+Workflow file: `.github/workflows/dbt-ci.yml`
+
+### How it works
+
+On every push to `main` or pull request targeting `main`, the workflow:
+
+1. Spins up a Postgres service container (`cafe_db`)
+2. Seeds minimal source tables (`public.cafe_sales`, `ops.silver_corrections`) to replicate the pipeline's data sources
+3. Installs dbt packages via `dbt deps`
+4. Runs `dbt build --project-dir transform/` — executes all models and runs all data tests
+
+### Why it matters
+
+- catches broken model references, bad SQL, and failed tests before they reach the main branch
+- enforces that every change is validated automatically — no manual testing required before merging
+- makes the pipeline trustworthy: if CI passes, the full transformation layer is confirmed working
+
+### Running dbt locally
+
+```bash
+cd /Users/amirhakim/Cafe_DE
+dbt build --project-dir transform/
+```
+
 ## Roadmap
 
 The following improvements are planned for future versions of this project:
 
+- **Orchestration**: introduce Prefect to schedule and monitor the full pipeline — ingestion followed by `dbt build` — on a recurring cadence with alerting on failure
 - **Pipeline deployment**: containerize the ingestion script and Postgres instance using Docker, and migrate to a managed cloud database (e.g. AWS RDS or Supabase) for a production-grade setup
-- **Orchestration**: introduce a workflow orchestrator (Apache Airflow or Prefect) to schedule and monitor the full pipeline — ingestion followed by `dbt build` — on a recurring cadence with alerting on failure
 
 ## Notes
 
