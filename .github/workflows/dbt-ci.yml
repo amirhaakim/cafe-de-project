@@ -1,0 +1,98 @@
+name: dbt CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  dbt-build:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: cafe_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dbt
+        run: pip install dbt-postgres
+
+      - name: Create dbt profile
+        run: |
+          mkdir -p ~/.dbt
+          cat > ~/.dbt/profiles.yml << 'EOF'
+          transform:
+            outputs:
+              dev:
+                type: postgres
+                host: localhost
+                port: 5432
+                dbname: cafe_db
+                user: postgres
+                pass: postgres
+                schema: public
+                threads: 4
+            target: dev
+          EOF
+
+      - name: Seed source tables
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -d cafe_db << 'EOF'
+          create schema if not exists ops;
+
+          create table if not exists public.cafe_sales (
+            transaction_id   text primary key,
+            item             text,
+            quantity         text,
+            price_per_unit   text,
+            total_spent      text,
+            payment_method   text,
+            location         text,
+            transaction_date text
+          );
+
+          insert into public.cafe_sales values
+            ('TXN001', 'Coffee', '2',     '5.00',  '10.00',  'Credit Card',    'Downtown', '2024-01-01'),
+            ('TXN002', 'Tea',    '1',     '3.50',  '3.50',   'Cash',           'Uptown',   '2024-01-02'),
+            ('TXN003', 'Cake',   'ERROR', '4.00',  'UNKNOWN','Digital Wallet', 'Suburbs',  '2024-01-03');
+
+          create table if not exists ops.silver_corrections (
+            transaction_id   text primary key,
+            item             text,
+            quantity         integer,
+            price_per_unit   numeric,
+            total_spent      numeric,
+            payment_method   text,
+            location         text,
+            transaction_date date,
+            corrected_by     text not null,
+            corrected_at     timestamp not null default now(),
+            reason           text
+          );
+          EOF
+
+      - name: Install dbt packages
+        run: dbt deps --project-dir transform/
+
+      - name: Run dbt build
+        run: dbt build --project-dir transform/
