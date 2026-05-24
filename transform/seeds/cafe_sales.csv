@@ -1,0 +1,11 @@
+transaction_id,item,quantity,price_per_unit,total_spent,payment_method,location,transaction_date
+TXN_SEED_001,Coffee,2,2.0,4.0,Credit Card,Takeaway,2023-09-08
+TXN_SEED_002,Cake,4,3.0,12.0,Cash,In-store,2023-05-16
+TXN_SEED_003,Cookie,4,1.0,ERROR,Credit Card,In-store,2023-07-19
+TXN_SEED_004,Salad,2,5.0,10.0,UNKNOWN,UNKNOWN,2023-04-27
+TXN_SEED_005,Coffee,2,2.0,4.0,Digital Wallet,In-store,2023-06-11
+TXN_SEED_006,Smoothie,5,4.0,20.0,Credit Card,,2023-03-31
+TXN_SEED_007,UNKNOWN,3,3.0,9.0,ERROR,Takeaway,2023-10-06
+TXN_SEED_008,Sandwich,4,4.0,16.0,Cash,UNKNOWN,2023-10-28
+TXN_SEED_009,,5,3.0,15.0,,Takeaway,2023-07-28
+TXN_SEED_010,Juice,2,3.0,6.0,Cash,In-store,2023-02-24
