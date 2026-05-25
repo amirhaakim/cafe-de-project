@@ -4,4 +4,5 @@ logs/
 venv/
 target/
 dbt_packages/
-dirty_cafe_sales.csv
+dirty_cafe_sales.csv/
+__pycache__
