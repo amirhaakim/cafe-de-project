@@ -55,44 +55,11 @@ jobs:
             target: dev
           EOF
 
-      - name: Seed source tables
-        run: |
-          PGPASSWORD=postgres psql -h localhost -U postgres -d cafe_db << 'EOF'
-          create schema if not exists ops;
-
-          create table if not exists public.cafe_sales (
-            transaction_id   text primary key,
-            item             text,
-            quantity         text,
-            price_per_unit   text,
-            total_spent      text,
-            payment_method   text,
-            location         text,
-            transaction_date text
-          );
-
-          insert into public.cafe_sales values
-            ('TXN001', 'Coffee', '2',     '5.00',  '10.00',  'Credit Card',    'Downtown', '2024-01-01'),
-            ('TXN002', 'Tea',    '1',     '3.50',  '3.50',   'Cash',           'Uptown',   '2024-01-02'),
-            ('TXN003', 'Cake',   'ERROR', '4.00',  'UNKNOWN','Digital Wallet', 'Suburbs',  '2024-01-03');
-
-          create table if not exists ops.silver_corrections (
-            transaction_id   text primary key,
-            item             text,
-            quantity         integer,
-            price_per_unit   numeric,
-            total_spent      numeric,
-            payment_method   text,
-            location         text,
-            transaction_date date,
-            corrected_by     text not null,
-            corrected_at     timestamp not null default now(),
-            reason           text
-          );
-          EOF
-
       - name: Install dbt packages
         run: dbt deps --project-dir transform/
+
+      - name: Seed source tables
+        run: dbt seed --project-dir transform/
 
       - name: Run dbt build
         run: dbt build --project-dir transform/
