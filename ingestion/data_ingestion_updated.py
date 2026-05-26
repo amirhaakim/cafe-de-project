@@ -125,7 +125,7 @@ def main():
         check_postgres_connection(engine)
         df = load_csv(CSV_PATH)
         ingest_to_postgres(df, engine)
-        print(f"Upsert completed for {len(df)} input rows into cafe_db.{TARGET_SCHEMA}.{TARGET_TABLE}")
+        print(f"Upsert completed for {len(df)} input rows into {TARGET_SCHEMA}.{TARGET_TABLE}")
     except (ConnectionError, FileNotFoundError, RuntimeError, ValueError) as error:
         print(error)
         raise
